@@ -28,3 +28,18 @@
   (max-calories
    (mapcar #'sum-calories
            (read-input-calories filename))))
+
+(defun sort-cals (cals)
+  (sort cals '>))
+
+(defun top-n-cals (cals n)
+  (let ((sorted-cals (sort-cals cals)))
+    (subseq sorted-cals 0 n)))
+
+(defun find-max-3-cals-elves (filename)
+  (sum-calories
+   (top-n-cals
+    (mapcar #'sum-calories
+            (read-input-calories filename))
+    3)))
+         
