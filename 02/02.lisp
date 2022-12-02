@@ -15,9 +15,23 @@
     ((b y) 'paper)
     ((c z) 'scissors)))
 
+(defun subst-syms-2 (symbol)
+  (case symbol
+    (a 'rock)
+    (b 'paper)
+    (c 'scissors)
+    (x 'loss)
+    (y 'tie)
+    (z 'victory)))
+
 (defun read-input (filename)
   (mapcar
    (lambda (pair) (mapcar #'subst-syms pair))
+   (mapcar #'line-as-list (read-all-lines filename))))
+
+(defun read-input-2 (filename)
+  (mapcar
+   (lambda (pair) (mapcar #'subst-syms-2 pair))
    (mapcar #'line-as-list (read-all-lines filename))))
 
 (defun score-choice (choice)
@@ -26,20 +40,18 @@
     (paper 2)
     (scissors 3)))
 
+(defun circular (items)
+  (setf (cdr (last items)) items)
+  items)
+
+(defparameter *game-options*
+  (circular '(rock paper scissors)))
+
 (defun outcome (me opponent)
-  (case me
-    (rock (case opponent
-             (paper 'loss)
-             (rock 'tie)
-             (scissors 'victory)))
-    (paper (case opponent
-              (scissors 'loss)
-              (paper 'tie)
-              (rock 'victory)))
-    (scissors (case opponent
-                 (rock 'loss)
-                 (scissors 'tie)
-                 (paper 'victory)))))
+  (cond ((eq me opponent) 'tie)
+        ((eq (second (member me *game-options*)) opponent)
+         'loss)
+        (t 'victory)))
 
 (defun score-win (pair)
   (case (outcome (second pair) (first pair))
@@ -55,3 +67,22 @@
 (defun score-total (matches)
   (apply #'+ (mapcar #'score-round matches)))
 
+(defun for-outcome (outcome opponent)
+  (case outcome
+    (tie opponent)
+    (victory (second (member opponent *game-options*)))
+    (loss (third (member opponent *game-options*)))))
+
+(defun construct-game-list (outcome-pairs)
+  (mapcar
+   (lambda (l)
+     (list
+      (first l)
+      (for-outcome (second l) (first l))))
+   outcome-pairs))
+
+(defun task-02-01 (input)
+  (score-total (read-input input)))
+
+(defun task-02-02 (input)
+  (score-total (construct-game-list (read-input-2 input))))
