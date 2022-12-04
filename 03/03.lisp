@@ -49,9 +49,39 @@
    (lambda (r) (unique (common-items (first r) (second r))))
    rucksacks))
 
+(defun take-n (l count)
+  (subseq l 0 count))
+
+(defun skip-n (l count)
+  (cond ((< count 1) l)
+        ((null l) l)
+        (t (skip-n (rest l) (1- count)))))
+
+(defun group-n (l count)
+  (cond ((null l) l)
+        ((< (length l) count) (list l))
+        (t (cons
+            (take-n l count)
+            (split-n (skip-n l count) count)))))
+
 (defun task-03-01 (input)
   (let* ((rucksacks (read-rucksacks input))
          (common (rucksack-common rucksacks))
+         (common-prios
+           (mapcar #'priority common)))
+    (reduce #'+ common-prios)))
+
+(defun task-03-02 (input)
+  (let* ((rucksacks
+           (mapcar (lambda (r) (apply #'append r))
+                   (read-rucksacks input)))
+         (groups (group-n rucksacks 3))
+         (common (mapcan
+                  (lambda (g) (unique
+                               (intersection
+                                (intersection (first g) (second g))
+                                (third g))))
+                  groups))
          (common-prios
            (mapcar #'priority common)))
     (reduce #'+ common-prios)))
